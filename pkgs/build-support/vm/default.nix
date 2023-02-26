@@ -9,14 +9,14 @@
 }:
 
 let
-  inherit (pkgs) bash bashInteractive busybox cpio coreutils e2fsprogs fetchurl kmod rpm
+  inherit (pkgs.pkgsHostHost) bash bashInteractive busybox cpio coreutils e2fsprogs fetchurl kmod rpm
     stdenv util-linux
     buildPackages writeScript writeText runCommand;
 in
 rec {
   qemu-common = import ../../../nixos/lib/qemu-common.nix { inherit lib pkgs; };
 
-  qemu = buildPackages.qemu_kvm;
+  qemu = buildPackages.qemu;
 
   modulesClosure = pkgs.makeModulesClosure {
     inherit kernel rootModules;
@@ -178,7 +178,7 @@ rec {
     # Set up automatic kernel module loading.
     export MODULE_DIR=${kernel}/lib/modules/
     ${coreutils}/bin/cat <<EOF > /run/modprobe
-    #! ${bash}/bin/sh
+    #! ${pkgs.pkgsBuildHost.bash}/bin/sh
     export MODULE_DIR=$MODULE_DIR
     exec ${kmod}/bin/modprobe "\$@"
     EOF

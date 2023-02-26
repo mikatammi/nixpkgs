@@ -1,4 +1,5 @@
 { lib, stdenv, fetchFromGitHub, bc, python3, bison, flex, fuse, libarchive
+, makeWrapper, gcc-unwrapped
 , buildPackages
 
 , firewallSupport ? false
@@ -17,7 +18,7 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-D3HQdKzhB172L62a+8884bNhcv7vm/c941wzbYtbf4I=";
   };
 
-  nativeBuildInputs = [ bc bison flex python3 ];
+  nativeBuildInputs = [ bc bison flex python3 makeWrapper ];
 
   buildInputs = [ fuse libarchive ];
 
@@ -61,6 +62,11 @@ stdenv.mkDerivation rec {
   ];
 
   enableParallelBuilding = true;
+
+  postFixup = ''
+    wrapProgram "$out/bin/cptofs" \
+      --prefix LD_LIBRARY_PATH ":" "${lib.makeLibraryPath [ gcc-unwrapped ]}"
+  '';
 
   meta = with lib; {
     description = "The Linux kernel as a library";
