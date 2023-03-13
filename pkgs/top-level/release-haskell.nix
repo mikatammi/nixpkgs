@@ -456,6 +456,32 @@ let
               };
             };
 
+        wasm32-wasip1 = {
+          haskellPackages = {
+            inherit (packagePlatforms pkgs.pkgsCross.wasm32-wasip1.haskellPackages)
+              ghc
+              hello
+              microlens
+              ;
+          };
+
+          haskell.packages.ghc914 = {
+            inherit (packagePlatforms pkgs.pkgsCross.wasm32-wasip1.haskell.packages.ghc914)
+              ghc
+              hello
+              microlens
+              ;
+          };
+
+          haskell.packages.ghcHEAD = {
+            inherit (packagePlatforms pkgs.pkgsCross.wasm32-wasip1.haskell.packages.ghcHEAD)
+              ghc
+              hello
+              microlens
+              ;
+          };
+        };
+
         ucrt64.haskell.packages.ghc912 = {
           inherit (packagePlatforms pkgs.pkgsCross.ucrt64.haskell.packages.ghc912)
             ghc

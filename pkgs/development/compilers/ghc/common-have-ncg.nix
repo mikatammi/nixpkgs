@@ -11,5 +11,6 @@ stdenv.targetPlatform.isx86
 || (lib.versionOlder version "9.4" && stdenv.targetPlatform.isSparc)
 || (lib.versionAtLeast version "9.2" && stdenv.targetPlatform.isAarch64)
 || (lib.versionAtLeast version "9.6" && stdenv.targetPlatform.isGhcjs)
+|| (lib.versionAtLeast version "9.6" && stdenv.targetPlatform.isWasm)
 || (lib.versionAtLeast version "9.12" && stdenv.targetPlatform.isRiscV64)
 || (lib.versionAtLeast version "9.14" && stdenv.targetPlatform.isLoongArch64)

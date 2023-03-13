@@ -51,6 +51,7 @@
   # bignum backend instead of the faster but GPLed gmp backend.
   enableNativeBignum ?
     stdenv.targetPlatform.isGhcjs
+    || stdenv.targetPlatform.isWasm
     || !(lib.meta.availableOn stdenv.hostPlatform gmp)
     || !(lib.meta.availableOn stdenv.targetPlatform gmp),
   gmp,
@@ -72,6 +73,7 @@
     !(
       stdenv.targetPlatform.isWindows
       || stdenv.targetPlatform.isGhcjs
+      || stdenv.targetPlatform.isWasm
       # Before <https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13932>,
       # we couldn't force hadrian to build terminfo for different triples.
       || (
@@ -432,6 +434,9 @@ let
       platform.libc != "glibc"
       && !targetPlatform.isWindows
       && !targetPlatform.isGhcjs
+      # iconv is part of wasilibc. On darwin hosts, libiconv isn't spliced, so
+      # the darwin one would end up in the wasm target's flags.
+      && !platform.isWasm
       && !targetPlatform.useAndroidPrebuilt
     ) libiconv;
 
