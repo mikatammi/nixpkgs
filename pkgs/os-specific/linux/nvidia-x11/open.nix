@@ -24,6 +24,11 @@ stdenv.mkDerivation ({
     "SYSSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
     "SYSOUT=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "MODLIB=$(out)/lib/modules/${kernel.modDirVersion}"
+  ] ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    {
+      aarch64-linux = "TARGET_ARCH=aarch64";
+      x86_64-linux = "TARGET_ARCH=x86_64";
+    }.${stdenv.hostPlatform.system}
   ];
 
   installTargets = [ "modules_install" ];
