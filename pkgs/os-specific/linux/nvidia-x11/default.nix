@@ -29,6 +29,7 @@ rec {
   production = generic {
     version = "515.86.01";
     sha256_64bit = "sha256-FBd34covEel9jTMmAhPxvjJ+tzkiriL03atAS7LvRmQ=";
+    sha256_aarch64 = "sha256-ZCMIvYGHf4hz7SjSha9xw7PT2SF0hx52XIY6PBzehG0=";
     openSha256 = "sha256-9QVq6eN+usbzMb0hYvAFPlyr6MDYHvgWPz2orm+5QFc=";
     settingsSha256 = "sha256-I8CE4EywZrsqzEy7plEG3bNfzTiT+vZJ1sqEQBrtLUQ=";
     persistencedSha256 = "sha256-vjn315k7i16U1NjY3EB0pw6sLddEcnKaT9CrHOCY268=";
@@ -37,6 +38,7 @@ rec {
   latest = selectHighestVersion production (generic {
     version = "520.56.06";
     sha256_64bit = "sha256-UWdLAL7Wdm7EPUHKhNGNaTkGI0+FUZBptqNB92wRPEY=";
+    sha256_aarch64 = "sha256-4zGaGEvRooE/ZTaR0sgRPnp5+yWFejkgZh1/ph9lOcM=";
     openSha256 = "sha256-miIxF/0fA7v8fU+oh/mx0DRqJdPBzmz14IqgPWJQeKU=";
     settingsSha256 = "sha256-NeT3tb7NGicKHnNkuOwbte6BJsP1bUzPSE+TXnevCAM=";
     persistencedSha256 = "sha256-3nWtnwpLaal3ty8GNMFa4zeonT8nKpYs6DIgsAq9+84=";
@@ -45,6 +47,7 @@ rec {
   beta = selectHighestVersion latest (generic {
     version = "525.53";
     sha256_64bit = "sha256-dLsJcfBPHd3TxGQciRcG+5bo3lLiL2B55Q3nbTpRaH8=";
+    sha256_aarch64 = "sha256-1OV2wJx5B0SBMvYP+5co31RYiqglPeodb7m/0W8aW6A=";
     openSha256 = "sha256-XA5RY+dQZv+dTHF7rm/bXnPZLj1G75PJKSTfREpuKag=";
     settingsSha256 = "sha256-N3+EOm2D2NSmD/cai+Pm2z5WHmV+GEJVr9KTQv/7j88=";
     persistencedSha256 = "sha256-AhB6zetbejQzajg76+hqpbfv3OzftueXGpviepH/xss=";
@@ -71,6 +74,7 @@ rec {
   legacy_470 = generic {
     version = "470.161.03";
     sha256_64bit = "sha256-Xagqf4x254Hn1/C+e3mNtNNE8mvU+s+avPPHHHH+dkA=";
+    sha256_aarch64 = "sha256-Ak+j3CkQNCsclv0X23gP1fx3XPOSEyRkjyK5+GDxhn4=";
     settingsSha256 = "sha256-ryUSiI8PsY3knkJLg0k1EmyYW5OWkhuZma/hmXNuojw=";
     persistencedSha256 = "sha256-/2h90Gq9NQd9Q+9eLVE6vrxXmINXxlLcSNOHxKToOEE=";
   };
