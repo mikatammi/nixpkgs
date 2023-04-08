@@ -2,6 +2,7 @@
 , url ? null
 , sha256_32bit ? null
 , sha256_64bit
+, sha256_aarch64 ? null
 , openSha256 ? null
 , settingsSha256
 , settingsVersion ? version
@@ -28,7 +29,7 @@
   libsOnly ? false
 , # don't include the bundled 32-bit libraries on 64-bit platforms,
   # even if it’s in downloaded binary
-  disable32Bit ? false
+  disable32Bit ? stdenv.hostPlatform.system == "aarch64-linux"
   # 32 bit libs only version of this package
 , lib32 ? null
   # Whether to extract the GSP firmware
@@ -66,6 +67,11 @@ let
         fetchurl {
           url = args.url or "https://download.nvidia.com/XFree86/Linux-x86/${version}/NVIDIA-Linux-x86-${version}${pkgSuffix}.run";
           sha256 = sha256_32bit;
+        }
+      else if stdenv.hostPlatform.system == "aarch64-linux" && sha256_aarch64 != null then
+        fetchurl {
+          url = args.url or "https://us.download.nvidia.com/XFree86/aarch64/${version}/NVIDIA-Linux-aarch64-${version}${pkgSuffix}.run";
+          sha256 = sha256_aarch64;
         }
       else throw "nvidia-x11 does not support platform ${stdenv.hostPlatform.system}";
 
@@ -126,7 +132,9 @@ let
       homepage = "https://www.nvidia.com/object/unix.html";
       description = "X.org driver and kernel module for NVIDIA graphics cards";
       license = licenses.unfreeRedistributable;
-      platforms = [ "x86_64-linux" ] ++ optionals (!i686bundled) [ "i686-linux" ];
+      platforms = [ "x86_64-linux" ]
+        ++ optionals (!i686bundled) [ "i686-linux" ]
+        ++ optionals (sha256_aarch64 != null) [ "aarch64-linux" ];
       maintainers = with maintainers; [ jonringer ];
       priority = 4; # resolves collision with xorg-server's "lib/xorg/modules/extensions/libglx.so"
       inherit broken;

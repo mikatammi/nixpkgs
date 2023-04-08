@@ -7,7 +7,7 @@
 , broken ? false
 }:
 
-stdenv.mkDerivation {
+stdenv.mkDerivation ({
   pname = "nvidia-open";
   version = "${kernel.version}-${nvidia_x11.version}";
 
@@ -33,8 +33,10 @@ stdenv.mkDerivation {
     description = "NVIDIA Linux Open GPU Kernel Module";
     homepage = "https://github.com/NVIDIA/open-gpu-kernel-modules";
     license = with licenses; [ gpl2Plus mit ];
-    platforms = [ "x86_64-linux" ];
+    platforms = [ "x86_64-linux" "aarch64-linux" ];
     maintainers = with maintainers; [ nickcao ];
     inherit broken;
   };
-}
+} // lib.optionals stdenv.hostPlatform.isAarch64 {
+  NIX_CFLAGS_COMPILE = "-fno-stack-protector";
+})
