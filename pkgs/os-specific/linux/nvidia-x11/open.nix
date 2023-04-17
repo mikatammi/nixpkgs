@@ -43,5 +43,5 @@ stdenv.mkDerivation ({
     inherit broken;
   };
 } // lib.optionalAttrs stdenv.hostPlatform.isAarch64 {
-  env.NIX_CFLAGS_COMPILE = "-fno-stack-protector";
+  NIX_CFLAGS_COMPILE = "-fno-stack-protector";
 })
