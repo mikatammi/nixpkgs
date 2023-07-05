@@ -1,5 +1,6 @@
 {
   stdenvNoLibc,
+  callPackage,
   cmake,
   fetchFromGitHub,
   lib,
@@ -72,6 +73,7 @@ stdenvNoLibc.mkDerivation (finalAttrs: {
     libdir = "/lib/${stdenvNoLibc.system}";
     tests = {
       inherit firefox-unwrapped firefox-esr-unwrapped;
+      simple-c-cxx-binaries = callPackage ./test.nix { };
     };
   };
 
