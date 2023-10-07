@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
   pname = "sysbench";
   version = "1.0.20";
 
-  nativeBuildInputs = [ autoreconfHook pkg-config ];
+  nativeBuildInputs = [ autoreconfHook pkg-config libmysqlclient ];
   buildInputs = [ libmysqlclient luajit ] ++ lib.optionals stdenv.isLinux [ libaio ];
 
   src = fetchFromGitHub {
@@ -27,6 +27,22 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
+  postPatch = ''
+    substituteInPlace configure.ac --replace "pkg-config" "$PKG_CONFIG"
+  '' +
+  # concurrency_kit's configure script tries to check whether binaries built by
+  # compiler run, which of course fails because the binary has been
+  # cross-compiled. Disable the check when cross-compiling.
+  lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace \
+      third_party/concurrency_kit/ck/configure \
+      --replace \
+        'COMPILER=`./.1 2> /dev/null`' \
+        "COMPILER=gcc" \
+      --replace \
+        'PLATFORM=`uname -m 2> /dev/null`' \
+        "PLATFORM=aarch64"
+  '';
   configureFlags = [
     # The bundled version does not build on aarch64-darwin:
     # https://github.com/akopytov/sysbench/issues/416
