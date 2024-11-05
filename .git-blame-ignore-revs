@@ -203,3 +203,6 @@ ce21e97a1f20dee15da85c084f9d1148d84f853b
 
 # sqlc: format with nixfmt
 2bdec131b2bb2c8563f4556d741d34ccb77409e2
+
+# python3Packages.torch.tests: Fix formatting
+7f25e09357710e6953999572bee52e33aa511583
