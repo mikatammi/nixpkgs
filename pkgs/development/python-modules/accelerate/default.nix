@@ -118,16 +118,13 @@ buildPythonPackage rec {
 
       # After enabling MPS in pytorch, these tests started failing
       "test_accelerated_optimizer_step_was_skipped"
-      "test_auto_wrap_policy"
       "test_autocast_kwargs"
       "test_automatic_loading"
-      "test_backward_prefetch"
       "test_can_resume_training"
       "test_can_resume_training_checkpoints_relative_path"
       "test_can_resume_training_with_folder"
       "test_can_unwrap_model_fp16"
       "test_checkpoint_deletion"
-      "test_cpu_offload"
       "test_cpu_ram_efficient_loading"
       "test_grad_scaler_kwargs"
       "test_invalid_registration"
