@@ -190,6 +190,8 @@ package-maintainers:
     - uusi
   botan-bindings:
     - mikatammi
+  botan-low:
+    - mikatammi
   cdepillabout:
     - cloudy
     - password
