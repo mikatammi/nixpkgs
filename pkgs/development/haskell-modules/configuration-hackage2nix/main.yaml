@@ -188,6 +188,8 @@ package-maintainers:
     - nvfetcher
     - arch-web
     - uusi
+  botan-bindings:
+    - mikatammi
   cdepillabout:
     - cloudy
     - password
