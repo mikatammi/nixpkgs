@@ -1,0 +1,40 @@
+From ded852d3b4aa06bd75fb5f7e33bb9f0bb2495a73 Mon Sep 17 00:00:00 2001
+From: Mika Tammi <mikatammi@gmail.com>
+Date: Sat, 20 Dec 2025 00:18:08 +0200
+Subject: Fix unknown type NSView
+
+Signed-off-by: Mika Tammi <mikatammi@gmail.com>
+---
+ Source/Core/InputCommon/ControllerInterface/Quartz/Quartz.mm    | 2 ++
+ .../ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm        | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/Source/Core/InputCommon/ControllerInterface/Quartz/Quartz.mm b/Source/Core/InputCommon/ControllerInterface/Quartz/Quartz.mm
+index e0a504604a..740ca0caa2 100644
+--- a/Source/Core/InputCommon/ControllerInterface/Quartz/Quartz.mm
++++ b/Source/Core/InputCommon/ControllerInterface/Quartz/Quartz.mm
+@@ -1,6 +1,8 @@
+ // Copyright 2016 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
++#import <AppKit/AppKit.h>
++
+ #include "InputCommon/ControllerInterface/Quartz/Quartz.h"
+ 
+ #include "InputCommon/ControllerInterface/ControllerInterface.h"
+diff --git a/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm b/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
+index b9680b8947..2e12a664d6 100644
+--- a/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
++++ b/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
+@@ -1,6 +1,8 @@
+ // Copyright 2016 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
++#import <AppKit/AppKit.h>
++
+ #include "InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.h"
+ 
+ #include <map>
+-- 
+2.50.1 (Apple Git-155)
+

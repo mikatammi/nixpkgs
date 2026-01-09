@@ -1,0 +1,45 @@
+From caaded587f188091a7cdca7f02cfd0b3a824439c Mon Sep 17 00:00:00 2001
+From: Mika Tammi <mikatammi@gmail.com>
+Date: Sat, 20 Dec 2025 00:33:51 +0200
+Subject: Need private component also for Darwin
+
+Signed-off-by: Mika Tammi <mikatammi@gmail.com>
+---
+ Source/Core/DolphinQt/CMakeLists.txt | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/Source/Core/DolphinQt/CMakeLists.txt b/Source/Core/DolphinQt/CMakeLists.txt
+index 096b1e95f6..3a47efeed6 100644
+--- a/Source/Core/DolphinQt/CMakeLists.txt
++++ b/Source/Core/DolphinQt/CMakeLists.txt
+@@ -15,6 +15,13 @@ set(CMAKE_AUTOMOC ON)
+ set(CMAKE_AUTORCC ON)
+ 
+ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Svg)
++
++if (Qt6_VERSION VERSION_GREATER_EQUAL 6.10.0)
++  # GuiPrivate is needed to #include qplatformnativeinterface.h in MainWindow.cpp with Qt 6.10+.
++  set(NEED_QT_GUI_PRIVATE_COMPONENT ON)
++  find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
++endif()
++
+ message(STATUS "Found Qt version ${Qt6_VERSION}")
+ 
+ set_property(TARGET Qt6::Core PROPERTY INTERFACE_COMPILE_FEATURES "")
+@@ -448,6 +455,13 @@ PRIVATE
+   implot
+ )
+ 
++if (NEED_QT_GUI_PRIVATE_COMPONENT)
++  target_link_libraries(dolphin-emu
++  PRIVATE
++    Qt6::GuiPrivate
++  )
++endif()
++
+ if (WIN32)
+   target_link_libraries(dolphin-emu
+   PRIVATE
+-- 
+2.50.1 (Apple Git-155)
+
