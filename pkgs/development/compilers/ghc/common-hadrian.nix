@@ -760,6 +760,33 @@ stdenv.mkDerivation (
       "CONF_GCC_LINKER_OPTS_STAGE1=-fuse-ld=gold"
       "CONF_GCC_LINKER_OPTS_STAGE2=-fuse-ld=gold"
     ]
+    # Same C/C++/linker flags as upstream's wasm toolchain (ghc-wasm-meta),
+    # these also end up in the compiler's settings. The wasm-ld flags keep the
+    # JSFFI section and put the stack first, so an overflow traps instead of
+    # corrupting data.
+    ++ lib.optionals targetPlatform.isWasm (
+      let
+        ccOpts = "-Wno-error=int-conversion -O3 -mcpu=lime1 -mreference-types -msimd128";
+        ldOpts = lib.concatStringsSep "," [
+          "-Wl"
+          "--error-limit=0"
+          "--keep-section=ghc_wasm_jsffi"
+          "--keep-section=target_features"
+          "--stack-first"
+          "--strip-debug"
+        ];
+      in
+      lib.concatMap
+        (stage: [
+          "CONF_CC_OPTS_STAGE${stage}=${ccOpts}"
+          "CONF_CXX_OPTS_STAGE${stage}=-fno-exceptions ${ccOpts}"
+          "CONF_GCC_LINKER_OPTS_STAGE${stage}=${ldOpts}"
+        ])
+        [
+          "1"
+          "2"
+        ]
+    )
     ++ lib.optionals disableLargeAddressSpace [
       "--disable-large-address-space"
     ]
