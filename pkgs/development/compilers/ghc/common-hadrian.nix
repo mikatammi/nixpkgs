@@ -370,6 +370,9 @@
         # The RTS uses the WASI preview 1 API without including <wasi/api.h>,
         # which wasilibc >= 32 no longer pulls in through other headers.
         ./ghc-wasm-rts-include-wasi-api.patch
+        # With -msimd128, xxhash includes <arm_neon.h> (meant for SIMDe), which
+        # our clang ships but rejects for wasm. XXH3 isn't used on 32-bit anyway.
+        ./ghc-wasm-rts-no-xxh3.patch
       ]
 
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
