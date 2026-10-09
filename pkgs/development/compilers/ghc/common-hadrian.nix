@@ -913,6 +913,12 @@ stdenv.mkDerivation (
       # See https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13444
       "--hash-unit-ids"
     ]
+    # GHC >= 10 builds the haddock index for a cross compiler with the new
+    # haddock reading the bootstrap compiler's package database, which fails:
+    # "readPackageDb: inappropriate type (not enough bytes)".
+    ++ lib.optionals (targetPlatform != hostPlatform && lib.versionAtLeast version "9.15") [
+      "--docs=no-haddocks"
+    ]
     ++ hadrianSettings;
 
     buildPhase = ''
