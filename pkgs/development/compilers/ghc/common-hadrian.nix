@@ -382,6 +382,22 @@
           excludes = [ "changelog.d/*" ];
           hash = "sha256-Rbf8o8Jm+R6KYzNvM//EmMqS5AaunsRkQIWMpwZwGPg=";
         })
+        # With -msimd128, xxHash 0.8.3 includes <arm_neon.h> (meant for SIMDe),
+        # which our clang ships but rejects for wasm. xxHash fixed that on its dev
+        # branch (Cyan4973/xxHash#1182); until v0.8.5, take GHC's bumps to 0.8.4
+        # and to that dev commit.
+        # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/16708
+        (fetchpatch2 {
+          name = "ghc-xxhash-0.8.4.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/a71c8e17eb5332151f4acf94e1c9c0b7a24719e2.patch";
+          hash = "sha256-+8jW1aLDxphjX8fmCS6TnlhmNo5AVo2GTy/p8nfLnJ8=";
+        })
+        # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/16879
+        (fetchpatch2 {
+          name = "ghc-xxhash-dev.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/8c9da6b01ae986185e00b49d2c355668c142a257.patch";
+          hash = "sha256-Q+lnD9v0x6/mNUNDMDjDS0n/rdFpswY0oqoNyazaTlk=";
+        })
       ]
 
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
