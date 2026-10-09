@@ -19,6 +19,7 @@
   buildPackages,
   targetPackages,
   fetchpatch,
+  fetchpatch2,
 
   # build-tools
   bootPkgs,
@@ -351,6 +352,19 @@
           else
             null
         )
+      ]
+
+      # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS as
+      # "wasi" (configure would fail with "Unknown OS wasip1").
+      # TODO: submit upstream
+      ++ lib.optionals stdenv.targetPlatform.isWasi [
+        # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/16795
+        (fetchpatch2 {
+          name = "ghc-wasm-accept-wasip1.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/2eebe9bc5dd83e6b10be7bf68b982e15b422e1c6.patch";
+          excludes = [ "changelog.d/*" ];
+          hash = "sha256-SNCdrcF7OKbYrbrsv1fS9UCikCyHpuA6FGxhNi4UT1k=";
+        })
       ]
 
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
