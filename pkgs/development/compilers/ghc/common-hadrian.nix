@@ -15,6 +15,7 @@
   stdenv,
   stdenvNoCC,
   pkgsBuildTarget,
+  pkgsHostHost,
   pkgsHostTarget,
   buildPackages,
   targetPackages,
@@ -25,6 +26,8 @@
   bootPkgs,
   autoreconfHook,
   coreutils,
+  makeBinaryWrapper,
+  runCommand,
   fetchurl,
   fetchgit,
   perl,
@@ -614,6 +617,37 @@ let
       libffi = if targetPlatform.isWasm then pkgsTarget.libffi-wasm else pkgsTarget.libffi;
     };
 
+  # GHC's wasm interpreter (utils/jsffi/dyld.mjs), which runs Template Haskell
+  # splices, loads the shared libraries it needs (libc.so, libffi.so, …) by name
+  # from a single directory.
+  wasmInterpreterLibDir = buildPackages.runCommand "wasm-interpreter-libs" { } ''
+    mkdir -p "$out"
+    for d in ${targetPackages.wasilibc}${targetPackages.wasilibc.libdir} ${lib.getLib targetLibs.libffi}/lib; do
+      for f in "$d"/*; do
+        if [ -f "$f" ]; then ln -s "$f" "$out/"; fi
+      done
+    done
+  '';
+
+  # GHC starts its wasm interpreter through dyld.mjs's interpreter line,
+  # "#!/usr/bin/env -S node <flags>". There is no /usr/bin/env in the sandbox,
+  # and with store paths for env and node the line gets longer than the 256
+  # bytes Linux reads of it. So dyld.mjs gets a node wrapper that adds the flags
+  # instead; a binary one, as macOS doesn't run scripts as interpreters.
+  # node comes from pkgsHostHost: it runs on GHC's host and targets nothing, and
+  # with our target platform darwin would get a variant Hydra doesn't build.
+  wasmInterpreterNode =
+    runCommand "ghc-${version}-wasm-interpreter-node" { nativeBuildInputs = [ makeBinaryWrapper ]; }
+      ''
+        read -r interpreter < ${ghcSrc}/utils/jsffi/dyld.mjs
+        flags=''${interpreter#"#!/usr/bin/env -S node "}
+        if [ "$flags" = "$interpreter" ]; then
+          echo "unexpected interpreter line in dyld.mjs: $interpreter" >&2
+          exit 1
+        fi
+        makeBinaryWrapper ${lib.getExe pkgsHostHost.nodejs} "$out/bin/node" --add-flags "$flags"
+      '';
+
   # Our Cabal compiler name
   haskellCompilerName = "ghc-${version}";
 
@@ -632,23 +666,42 @@ stdenv.mkDerivation (
     enableParallelBuilding = true;
 
     postPatch =
+      lib.optionalString (targetPlatform.isWasm && lib.versionAtLeast version "9.12") (
+        let
+          libdirFile =
+            if lib.versionOlder version "9.15" then
+              "compiler/GHC.hs"
+            else
+              "compiler/GHC/Runtime/Interpreter/Init.hs";
+          ldConfig = if lib.versionOlder version "9.15" then "dflags" else "(interpLdConfig opts)";
+        in
+        ''
+          # Start the wasm interpreter with our node wrapper (see wasmInterpreterNode).
+          sed -i '1s|.*|#!${wasmInterpreterNode}/bin/node|' utils/jsffi/dyld.mjs
+          # GHC passes the interpreter the C compiler's last "libraries" search
+          # directory, which with our cc-wrapper doesn't contain libc.so etc.
+          substituteInPlace ${libdirFile} \
+            --replace-fail ${lib.escapeShellArg ''last <$> Loader.getGccSearchDirectory logger ${ldConfig} "libraries"''} ${lib.escapeShellArg ''pure "${wasmInterpreterLibDir}"''}
+        ''
+      )
       # GHC >= 10 also builds an RTS and a compiler for the host, configured from
       # host templates with hardcoded values that are wrong on darwin: use-lib-rt =
       # YES (macOS has no librt), symbols without a leading underscore, and no
       # otool/install_name_tool, which GHC runs when linking for darwin.
-      lib.optionalString
-        (targetPlatform.isWasm && hostPlatform.isDarwin && lib.versionAtLeast version "9.15")
-        ''
-          substituteInPlace hadrian/cfg/system.config.host.in \
-            --replace-fail "use-lib-rt        = YES" "use-lib-rt        = NO"
-          substituteInPlace hadrian/cfg/default.host.target.in \
-            --replace-fail "tgtSymbolsHaveLeadingUnderscore = False" \
-              "tgtSymbolsHaveLeadingUnderscore = True" \
-            --replace-fail "tgtOtool = Nothing" \
-              'tgtOtool = Just (Program {prgPath = "${toolPath "otool" buildCC}", prgFlags = []})' \
-            --replace-fail "tgtInstallNameTool = Nothing" \
-              'tgtInstallNameTool = Just (Program {prgPath = "${toolPath "install_name_tool" buildCC}", prgFlags = []})'
-        ''
+      +
+        lib.optionalString
+          (targetPlatform.isWasm && hostPlatform.isDarwin && lib.versionAtLeast version "9.15")
+          ''
+            substituteInPlace hadrian/cfg/system.config.host.in \
+              --replace-fail "use-lib-rt        = YES" "use-lib-rt        = NO"
+            substituteInPlace hadrian/cfg/default.host.target.in \
+              --replace-fail "tgtSymbolsHaveLeadingUnderscore = False" \
+                "tgtSymbolsHaveLeadingUnderscore = True" \
+              --replace-fail "tgtOtool = Nothing" \
+                'tgtOtool = Just (Program {prgPath = "${toolPath "otool" buildCC}", prgFlags = []})' \
+              --replace-fail "tgtInstallNameTool = Nothing" \
+                'tgtInstallNameTool = Just (Program {prgPath = "${toolPath "install_name_tool" buildCC}", prgFlags = []})'
+          ''
       + ''
         patchShebangs --build .
       '';
