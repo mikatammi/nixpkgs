@@ -353,6 +353,13 @@
         )
       ]
 
+      # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS as
+      # "wasi" (configure would fail with "Unknown OS wasip1").
+      # TODO: submit upstream
+      ++ lib.optionals stdenv.targetPlatform.isWasi [
+        ./ghc-wasm-accept-wasip1.patch
+      ]
+
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
 
     stdenv = stdenvNoCC;
