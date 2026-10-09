@@ -60,8 +60,12 @@
   gmp,
 
   # If enabled, use -fPIC when compiling static libs.
+  # Not for wasm: executables are linked statically and Template Haskell uses
+  # shared libraries built by GHC's dynamic way instead.
   enableRelocatedStaticLibs ?
-    stdenv.targetPlatform != stdenv.hostPlatform && !stdenv.targetPlatform.isWindows,
+    stdenv.targetPlatform != stdenv.hostPlatform
+    && !stdenv.targetPlatform.isWindows
+    && !stdenv.targetPlatform.isWasm,
 
   # Exceeds Hydra output limit (at the time of writing ~3GB) when cross compiled to riscv64.
   # A riscv64 cross-compiler fits into the limit comfortably.
@@ -427,7 +431,8 @@ let
       "*.*.ghc.c.opts += -optc-std=gnu99"
     ]
     # Inform GHC that we can't load dynamic libraries which forces iserv-proxy to load static libraries.
-    ++ lib.optionals targetPlatform.isStatic [
+    # GHC's wasm interpreter doesn't use iserv-proxy and does load shared libraries.
+    ++ lib.optionals (targetPlatform.isStatic && !targetPlatform.isWasm) [
       "*.ghc.cabal.configure.opts += --flags=-dynamic-system-linker"
     ];
 
