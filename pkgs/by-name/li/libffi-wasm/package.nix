@@ -57,6 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     done
     $AR rcs libffi.a cbits/*.o
 
+    # GHC's wasm interpreter (Template Haskell, GHCi) loads shared libraries only.
+    $CC -fPIC -fvisibility=default -shared \
+      -Wl,--keep-section=target_features,--strip-debug \
+      cbits/*.c -o libffi.so
+
     runHook postBuild
   '';
 
@@ -64,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook preInstall
 
     install -Dm444 -t "$dev/include" cbits/*.h
-    install -Dm444 -t "$out/lib" libffi.a
+    install -Dm444 -t "$out/lib" libffi.a libffi.so
 
     mkdir -p "$dev/lib/pkgconfig"
     cat > "$dev/lib/pkgconfig/libffi.pc" <<EOF
