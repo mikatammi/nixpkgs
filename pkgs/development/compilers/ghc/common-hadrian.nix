@@ -39,6 +39,9 @@
 
   # GHC can be built with system libffi or a bundled one.
   libffi ? null,
+  # Upstream libffi's wasm port requires Emscripten, so GHC's wasm backend uses
+  # its own limited libffi implementation instead.
+  libffi-wasm ? null,
 
   useLLVM ? !(import ./common-have-ncg.nix { inherit lib stdenv version; }),
   # LLVM is conceptually a run-time-only dependency, but for
@@ -425,7 +428,7 @@ let
   libDeps =
     platform:
     lib.optional enableTerminfo ncurses
-    ++ lib.optionals (!targetPlatform.isGhcjs) [ libffi ]
+    ++ lib.optionals (!targetPlatform.isGhcjs) [ (if platform.isWasm then libffi-wasm else libffi) ]
     # Bindist configure script fails w/o elfutils in linker search path
     # https://gitlab.haskell.org/ghc/ghc/-/issues/22081
     ++ lib.optional enableDwarf elfutils
@@ -539,15 +542,19 @@ let
   # 3. The core libs used by the final GHC (stage 2) for user artifacts are also
   #    used to build stage 2 GHC itself, i.e. the core libs are both host and
   #    target.
-  targetLibs = {
-    inherit (if hostPlatform != targetPlatform then targetPackages else pkgsHostTarget)
-      elfutils
-      gmp
-      libffi
-      ncurses
-      numactl
-      ;
-  };
+  targetLibs =
+    let
+      pkgsTarget = if hostPlatform != targetPlatform then targetPackages else pkgsHostTarget;
+    in
+    {
+      inherit (pkgsTarget)
+        elfutils
+        gmp
+        ncurses
+        numactl
+        ;
+      libffi = if targetPlatform.isWasm then pkgsTarget.libffi-wasm else pkgsTarget.libffi;
+    };
 
   # Our Cabal compiler name
   haskellCompilerName = "ghc-${version}";
