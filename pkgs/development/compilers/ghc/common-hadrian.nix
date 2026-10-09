@@ -357,7 +357,7 @@
         )
       ]
 
-      # TODO: submit both upstream
+      # TODO: submit these upstream
       ++ lib.optionals stdenv.targetPlatform.isWasi [
         # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS
         # as "wasi" (configure would fail with "Unknown OS wasip1").
@@ -367,6 +367,9 @@
         # compiler then picks libffi-wasm's archive for the bootstrap RTS's -lffi.
         # (This affects all cross compilers, but only breaks with wasm.)
         ./hadrian-cross-stage0-no-target-libffi.patch
+        # The RTS uses the WASI preview 1 API without including <wasi/api.h>,
+        # which wasilibc >= 32 no longer pulls in through other headers.
+        ./ghc-wasm-rts-include-wasi-api.patch
       ]
 
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
