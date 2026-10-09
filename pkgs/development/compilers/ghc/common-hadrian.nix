@@ -364,6 +364,14 @@
         )
       ]
 
+      # Since GHC 10, the RTS lists libffi's directory as its only static library
+      # dir, so Cabal no longer falls back to the normal ones, which also hold
+      # libnuma's, libdw's and libzstd's. Linking executables then fails with
+      # e.g. "cannot find -lnuma", unless the build environment provides them.
+      ++ lib.optionals (lib.versionAtLeast version "9.15") [
+        ./ghc-10-rts-static-lib-dirs.patch
+      ]
+
       # TODO: submit these upstream
       ++ lib.optionals stdenv.targetPlatform.isWasi [
         # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS
