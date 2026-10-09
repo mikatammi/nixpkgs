@@ -603,9 +603,27 @@ stdenv.mkDerivation (
 
     enableParallelBuilding = true;
 
-    postPatch = ''
-      patchShebangs --build .
-    '';
+    postPatch =
+      # GHC >= 10 also builds an RTS and a compiler for the host, configured from
+      # host templates with hardcoded values that are wrong on darwin: use-lib-rt =
+      # YES (macOS has no librt), symbols without a leading underscore, and no
+      # otool/install_name_tool, which GHC runs when linking for darwin.
+      lib.optionalString
+        (targetPlatform.isWasm && hostPlatform.isDarwin && lib.versionAtLeast version "9.15")
+        ''
+          substituteInPlace hadrian/cfg/system.config.host.in \
+            --replace-fail "use-lib-rt        = YES" "use-lib-rt        = NO"
+          substituteInPlace hadrian/cfg/default.host.target.in \
+            --replace-fail "tgtSymbolsHaveLeadingUnderscore = False" \
+              "tgtSymbolsHaveLeadingUnderscore = True" \
+            --replace-fail "tgtOtool = Nothing" \
+              'tgtOtool = Just (Program {prgPath = "${toolPath "otool" buildCC}", prgFlags = []})' \
+            --replace-fail "tgtInstallNameTool = Nothing" \
+              'tgtInstallNameTool = Just (Program {prgPath = "${toolPath "install_name_tool" buildCC}", prgFlags = []})'
+        ''
+      + ''
+        patchShebangs --build .
+      '';
 
     # GHC is a bit confused on its cross terminology.
     # TODO(@sternenseemann): investigate coreutils dependencies and pass absolute paths
