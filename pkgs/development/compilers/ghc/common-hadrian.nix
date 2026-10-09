@@ -358,10 +358,10 @@
         )
       ]
 
-      # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS as
-      # "wasi" (configure would fail with "Unknown OS wasip1").
-      # TODO: submit upstream
+      # TODO: submit both upstream
       ++ lib.optionals stdenv.targetPlatform.isWasi [
+        # Our WASI triple is wasm32-unknown-wasip1, but GHC only knows the OS
+        # as "wasi" (configure would fail with "Unknown OS wasip1").
         # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/16795
         (fetchpatch2 {
           name = "ghc-wasm-accept-wasip1.patch";
@@ -369,6 +369,11 @@
           excludes = [ "changelog.d/*" ];
           hash = "sha256-SNCdrcF7OKbYrbrsv1fS9UCikCyHpuA6FGxhNi4UT1k=";
         })
+        # Hadrian passes the target's libffi directories to the stage0 build of
+        # the ghc library, which runs on the build platform. Linking the stage1
+        # compiler then picks libffi-wasm's archive for the bootstrap RTS's -lffi.
+        # (This affects all cross compilers, but only breaks with wasm.)
+        ./hadrian-cross-stage0-no-target-libffi.patch
       ]
 
       ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
