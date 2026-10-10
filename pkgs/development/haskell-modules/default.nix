@@ -17,6 +17,7 @@
   configurationDarwin ? import ./configuration-darwin.nix,
   configurationWindows ? import ./configuration-windows.nix,
   configurationJS ? import ./configuration-ghcjs-9.x.nix,
+  configurationWasm ? import ./configuration-wasm.nix,
 }:
 
 let
@@ -48,6 +49,9 @@ let
     ]
     ++ lib.optionals stdenv.hostPlatform.isGhcjs [
       (configurationJS { inherit pkgs haskellLib; })
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isWasm [
+      (configurationWasm { inherit pkgs haskellLib; })
     ];
 
   extensions = lib.composeManyExtensions (

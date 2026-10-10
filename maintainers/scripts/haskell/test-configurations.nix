@@ -117,6 +117,7 @@ let
       "nix" = defaultSets;
       "arm" = defaultSets;
       "darwin" = defaultSets;
+      "wasm" = [ pkgs.pkgsCross.wasm32-wasip1.haskellPackages ];
     }
     .${configName} or setsForVersion;
 
