@@ -65,7 +65,10 @@ let
         ghcWithHoogle
         ghcWithPackages
         ;
-      nodejs = buildPackages.nodejs-slim;
+      # The generic builder runs node on the build platform, for wasm and GHCJS
+      # hosts. buildPackages' would have our target platform, which on darwin
+      # makes a variant that Hydra doesn't build.
+      nodejs = pkgs.pkgsBuildBuild.nodejs-slim;
       iserv-proxy = {
         build = buildHaskellPackages.iserv-proxy;
         host = self.iserv-proxy;
